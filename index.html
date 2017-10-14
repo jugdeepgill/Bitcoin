@@ -34,10 +34,22 @@
     var currency = document.querySelector('.input').value;
     console.log(currency);
 
-    fetch(`https://api.coinmarketcap.com/v1/ticker/`)
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
+    fetch(`https://api.coinmarketcap.com/v1/ticker/${currency}`)
+    .then(response => {
+      if (response.status != 200) {
+        document.querySelector('#output').innerHTML = `
+        <article class="message is-danger">
+  <div class="message-header">
+    <p>Please Try Again!</p>
+    <button class="delete" aria-label="delete"></button>
+  </div>
+  <div class="message-body">
+  <p><strong>There is an error. The currency name typed is incorrect.</strong></p>
+  </div>
+</article>
+        `
+
+      }
     })
 
     e.preventDefault();
