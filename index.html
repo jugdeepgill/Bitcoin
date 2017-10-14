@@ -3,58 +3,167 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <header name = "Access-Control-Allow-Origin" value = "*" />
     <title>Hello Bulma!</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css">
   </head>
+  <style media="screen">
+    .id {
+      text-transform: capitalize;
+    }
+
+    .columns {
+      text-align: center;
+    }
+
+    hr {
+      display: none;
+    }
+
+    h6 {
+      font-size: 18px;
+    }
+  </style>
   <body>
   <section class="section">
       <div class="container">
-        <form id="input">
-          <div class="control has-icons-left has-icons-right">
-            <input class="input is-large" type="text" placeholder="Enter Currency Name...">
-            <span class="icon is-medium is-left">
-              <i class="fa fa-dollar"></i>
-            </span>
-          </div>
-        </form>
-      </div>
+        <div class="columns">
+          <form id="input" class="column">
+            <div class="control has-icons-left has-icons-right">
+              <input class="input is-large" type="text" placeholder="Enter Currency Name...">
+
+              <span class="icon is-medium is-left">
+                <i class="fa fa-dollar"></i>
+              </span>
+            </div>
+          </form>
+
+          <div class="field column is-one-quarter">
+  <div class="control">
+    <div class="select is-primary is-large">
+      <select id="rate">
+        <option>AUD</option>
+        <option>BGN</option>
+        <option>BRL</option>
+        <option>CAD</option>
+        <option>CHF</option>
+        <option>CNY</option>
+        <option>CZK</option>
+        <option>DKK</option>
+        <option>EUR</option>
+        <option>GBP</option>
+        <option>HKD</option>
+        <option>HRK</option>
+        <option>HUF</option>
+        <option>IDR</option>
+        <option>ILS</option>
+        <option>INR</option>
+        <option>JPY</option>
+        <option>KRW</option>
+        <option>MXN</option>
+        <option>MYR</option>
+        <option>NOK</option>
+        <option>NZD</option>
+        <option>PHP</option>
+        <option>PLN</option>
+        <option>RON</option>
+        <option>RUB</option>
+        <option>SEK</option>
+        <option>SGD</option>
+        <option>THB</option>
+        <option>TRY</option>
+        <option>ZAR</option>
+      </select>
+    </div>
+  </div>
+</div>
   </section>
 
   <div class="container">
     <div id="output"></div>
   </div>
+
+  <hr>
+
   </body>
 
   <script type="text/javascript">
   document.querySelector('#input').addEventListener('submit', getCurrencyRate);
-  document.get
+  document.querySelector('body').addEventListener('click', removeDelete);
+  document.querySelector('#rate').addEventListener('click', getCurrencyRate);
 
   function getCurrencyRate(e) {
     var currency = document.querySelector('.input').value;
-    console.log(currency);
+    var rate = document.querySelector('#rate').value;
 
-    fetch(`https://api.coinmarketcap.com/v1/ticker/${currency}`)
+    fetch('http://api.fixer.io/latest?base=USD')
+    .then(response => response.json())
+    .then(price => {
+      exchangeRate = price.rates[rate];
+      return exchangeRate;
+    });
+
+    fetch(`https://api.coinmarketcap.com/v1/ticker/${currency}/?convert=${rate}`)
     .then(response => {
       if (response.status != 200) {
-        document.querySelector('#output').innerHTML = `
-        <article class="message is-danger">
-  <div class="message-header">
-    <p>Please Try Again!</p>
-    <button class="delete" aria-label="delete"></button>
-  </div>
-  <div class="message-body">
-  <p><strong>There is an error. The currency name typed is incorrect.</strong></p>
-  </div>
-</article>
-        `
-
-      }
+        document.querySelector('hr').style.display = 'block';
+        console.log(response.status);
+            document.querySelector('#output').innerHTML = `<article class="message is-large is-danger">
+      <div class="message-header">
+        <p>Error <i class="fa fa-warning icon has-text-white"></i></p>
+        <button class="delete is-large" aria-label="delete"></button>
+      </div>
+      <div class="message-body">
+      <p>Are you sure you are typing the correct name for the <em>cryptocurrency</em>. Please be reminded that if you searching for let's say <strong><em>Bitcoin</em></strong>, then you have to type the <strong><em>Bitcoin</em></strong> the search field, please do not type the symbolic name of it such as <strong><em>BTC</em></strong>. </p>
+      <br>
+      <h6><small>Error: <strong>404.</strong></small></h6>
+      </div>
+    </article>`;
+    throw Error(response.statusText);
+  } else {
+    return response.json();
+  }
+})
+    .then(data => {
+      document.querySelector('hr').style.display = 'block';
+      let output = ``;
+      data.forEach(data =>
+         {
+        output += `
+        <article class="message is-success is-large">
+          <div class="message-header">
+            <p class="id">${data.id} <i class="fa fa-check icon has-text-white"></i></p>
+            <button class="delete is-large"></button>
+          </div>
+          <div class="message-body">
+            <ul>
+              <li>Price ${rate}: <strong>${data.price_usd * exchangeRate}</strong></li>
+              <li>Price: <strong>${data.price_usd}</strong></li>
+              <li>Price BTC: <strong>${data.price_btc}</strong></li>
+              <li>Symbol: <strong>${data.symbol}</strong></li>
+              <li>Percentage Change (1 Hour): <strong>${data.percent_change_1h}</strong></li>
+              <li>Percentage Change (24 Hours): <strong>${data.percent_change_24h}</strong></li>
+              <li>Percentage Change (7 Days): <strong>${data.percent_change_7d}</strong></li>
+            </ul>
+            <br
+            <h6><small>Response Succesful from <strong>CoinMarketCap.</strong></small></h6>
+          </div>
+        </article>
+        `;
+      })
+      document.querySelector('#output').innerHTML = output;
     })
-
     e.preventDefault();
   }
 
+  function removeDelete(e) {
+    if (e.target.className == 'delete is-large') {
+      document.querySelector('.message').remove();
+      document.querySelector('hr').style.display = 'none';
+    }
+  }
 
   </script>
 </html>
