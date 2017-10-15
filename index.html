@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Access-Control-Allow-Origin" content="*">
     <header name = "Access-Control-Allow-Origin" value = "*" />
-    <title>Hello Bulma!</title>
+    <title>CryptoCurrency Information</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css">
   </head>
@@ -14,25 +14,21 @@
       text-transform: capitalize;
     }
 
-    .columns {
-      text-align: center;
-    }
-
     hr {
       display: none;
     }
 
-    h6 {
-      font-size: 18px;
+    #footer {
+      display: none;
     }
   </style>
   <body>
   <section class="section">
       <div class="container">
         <div class="columns">
-          <form id="input" class="column">
+          <form id="input" class="column is-10">
             <div class="control has-icons-left has-icons-right">
-              <input class="input is-large" type="text" placeholder="Enter Currency Name...">
+              <input class="input is-primary is-large" type="text" placeholder="Enter Currency Name...">
 
               <span class="icon is-medium is-left">
                 <i class="fa fa-dollar"></i>
@@ -40,7 +36,7 @@
             </div>
           </form>
 
-          <div class="field column is-one-quarter">
+          <div class="field column is-2">
   <div class="control">
     <div class="select is-primary is-large">
       <select id="rate">
@@ -82,10 +78,15 @@
   </section>
 
   <div class="container">
-    <div id="output"></div>
+          <div id="output"></div>
   </div>
 
   <hr>
+
+  <div id="footer" class="container">
+    <p id="responseText"></p>
+    <br>
+  </div>
 
   </body>
 
@@ -96,7 +97,7 @@
 
   function getCurrencyRate(e) {
     var currency = document.querySelector('.input').value;
-    var rate = document.querySelector('#rate').value;
+    var rate = document.querySelector('#rate').value.toUpperCase();
 
     fetch('http://api.fixer.io/latest?base=USD')
     .then(response => response.json())
@@ -109,7 +110,7 @@
     .then(response => {
       if (response.status != 200) {
         document.querySelector('hr').style.display = 'block';
-        console.log(response.status);
+        document.querySelector('#footer').style.display = 'block';
             document.querySelector('#output').innerHTML = `<article class="message is-large is-danger">
       <div class="message-header">
         <p>Error <i class="fa fa-warning icon has-text-white"></i></p>
@@ -121,6 +122,16 @@
       <h6><small>Error: <strong>404.</strong></small></h6>
       </div>
     </article>`;
+
+    document.querySelector('#responseText').innerHTML = `<article class="message is-danger">
+      <div class="message-body">
+        <p>
+          <strong>CryptoCurrency.io</strong> by Jugdeep Gill. The API queries are from <a target="_blank" href="https://coinmarketcap.com/">CoinMarketCap</a> & Currency Exchange Rate by <a target="blank" href="http://fixer.io/">Fixer.io</a>.
+          The response was failed from CoinMarketCap & Fixer.io.
+        </p>
+      </div>
+    </article>`;
+
     throw Error(response.statusText);
   } else {
     return response.json();
@@ -128,30 +139,37 @@
 })
     .then(data => {
       document.querySelector('hr').style.display = 'block';
+      document.querySelector('#footer').style.display = 'block';
       let output = ``;
       data.forEach(data =>
          {
         output += `
         <article class="message is-success is-large">
           <div class="message-header">
-            <p class="id">${data.id} <i class="fa fa-check icon has-text-white"></i></p>
+            <p class="id">${data.id} <i class="fa fa-check-circle icon has-text-white"></i></p>
             <button class="delete is-large"></button>
           </div>
           <div class="message-body">
             <ul>
-              <li>Price ${rate}: <strong>${data.price_usd * exchangeRate}</strong></li>
-              <li>Price: <strong>${data.price_usd}</strong></li>
-              <li>Price BTC: <strong>${data.price_btc}</strong></li>
-              <li>Symbol: <strong>${data.symbol}</strong></li>
-              <li>Percentage Change (1 Hour): <strong>${data.percent_change_1h}</strong></li>
-              <li>Percentage Change (24 Hours): <strong>${data.percent_change_24h}</strong></li>
-              <li>Percentage Change (7 Days): <strong>${data.percent_change_7d}</strong></li>
+              <li>Price ${rate}: <i class="fa fa-dollar icon has-text-info"></i><strong> ${data.price_usd * exchangeRate}</strong></li>
+              <li>Price USD: <i class="fa fa-dollar icon has-text-info"></i><strong> ${data.price_usd}</strong></li>
+              <li>Price BTC: <i class="fa fa-btc icon has-text-info"></i><strong> ${data.price_btc}</strong></li>
+              <li>Percentage Change (1 Hour): <strong> ${data.percent_change_1h}</strong></li>
+              <li>Percentage Change (24 Hours): <strong> ${data.percent_change_24h}</strong></li>
+              <li>Percentage Change (7 Days): <strong> ${data.percent_change_7d}</strong></li>
+              <li>Symbol: <i class="fa fa-globe icon has-text-info"></i><strong> ${data.symbol}</strong></li>
             </ul>
-            <br
-            <h6><small>Response Succesful from <strong>CoinMarketCap.</strong></small></h6>
           </div>
         </article>
         `;
+        document.querySelector('#responseText').innerHTML = `<article class="message is-primary">
+          <div class="message-body">
+            <p>
+              <strong>CryptoCurrency.io</strong> by Jugdeep Gill. The API queries are from <a target="_blank" href="https://coinmarketcap.com/">CoinMarketCap</a> & Currency Exchange Rate by <a target="_blank" href="http://fixer.io/">Fixer.io</a>.
+              The response was successful from CoinMarketCap & Fixer.io.
+            </p>
+          </div>
+        </article>`;
       })
       document.querySelector('#output').innerHTML = output;
     })
@@ -162,6 +180,7 @@
     if (e.target.className == 'delete is-large') {
       document.querySelector('.message').remove();
       document.querySelector('hr').style.display = 'none';
+      document.querySelector('#footer').style.display = 'none';
     }
   }
 
